@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Тесла веб-клиент</title>
+		<meta charset="utf-8" />
+		<style>
+		.head {
+			width: 50%;
+			margin: 0 auto;
+			text-align: center;
+		}
+		.content {
+			width: 50%;
+			margin: 10% auto;
+			text-align: center;
+			font-size: 40px;
+		}
+		.button_8 {
+			margin: 20px;
+			width: 1000px;
+			height: 500px;
+			border: solid 5px;
+			border-radius: 30px;
+			line-height: 40px;
+			font-size: 25px;
+			text-align: center;
+		.button_2 {
+			margin: 20px;
+			width: 1000px;
+			height: 500px;
+			border: solid 5px;
+			border-radius: 30px;
+			line-height: 40px;
+			font-size: 25px;
+			text-align: center;
+		.button_4 {
+			margin: 20px;
+			width: 1000px;
+			height: 500px;
+			border: solid 5px;
+			border-radius: 30px;
+			line-height: 40px;
+			font-size: 25px;
+			text-align: center;
+		.button_6 {
+			margin: 20px;
+			width: 1000px;
+			height: 500px;
+			border: solid 5px;
+			border-radius: 30px;
+			line-height: 40px;
+			font-size: 25px;
+			text-align: center;
+		}
+		#output {
+			text-align: center;
+			font-size: 20px;
+			color: #AAA;
+		}
+		</style>
+		<script>
+		
+		
+		window.onload = function () {
+			
+			output.innerHTML = '&nbsp;';	
+		}
+		
+		var send = function(button_name=''){
+			var xhr = new XMLHttpRequest();
+			
+			output.innerHTML = 'Выполняю…';
+			
+			if (button_name === 'button_8') {
+				xhr.open('GET', 'move_motor?direct=1&time=1.5&duty_cycle=90', true);
+			} else if (button_name === 'button_2') {
+				xhr.open('GET', 'move_motor?direct=-1&time=1.5&duty_cycle=90', true);
+			} else if (button_name === 'button_4') {
+				xhr.open('GET', 'move_rule?direct=1&time=0.3', true);
+			} else if (button_name === 'button_6') {
+				xhr.open('GET', 'move_rule?direct=-1&time=0.4', true);
+			}
+			
+			xhr.onreadystatechange = function() {
+				console.log(xhr.readyState, xhr.response);
+				if (xhr.readyState === 4) {
+					if (xhr.response === '') {
+						output.innerHTML = 'Нет связи с сервером';
+					}
+				}
+			}
+			output.innerHTML = '&nbsp;';
+			xhr.send();
+		}
+		</script>
+	</head>
+	<body>
+		<div class="head">
+			<h1>Тесла. Веб-клиент</h1>
+		</div>
+		<div class="content">
+			<button class="button" onclick="send('button_8')" id="button_8">Вперед</button>
+			<button class="button" onclick="send('button_2')" id="button_2">Назад</button>
+			<button class="button" onclick="send('button_4')" id="button_4">Влево</button>
+			<button class="button" onclick="send('button_6')" id="button_6">Вправо</button>
+			<div id="output">Загружаю страницу…</div>		
+			<iframe src="http://192.168.0.105:8081" width="800px" height="600px"/>
+		</div>
+	</body>
+</html>

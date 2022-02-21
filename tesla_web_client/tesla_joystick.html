@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Джойстик</title>
+<style>
+.joistik{width:200px; height:200px; background:#eee; border:1px solid #ccc; position:relative;}
+.joistmamipulator{width:20px; height:20px; position:absolute; border-radius:10px; background:#000; cursor:pointer;}
+</style>
+
+
+<script src="{{url_for('static',filename='jquery-1.9.1.js')}}" type="text/javascript"></script>
+<script src="{{url_for('static',filename='jquery-ui.js')}}" type="text/javascript"></script>
+
+
+<script>		
+	/*window.onload = function () {			
+			output.innerHTML = '&nbsp;';	
+	}*/
+
+	var teslaMove = function(direct_x=0, direct_y=0){
+		if (direct_y !== 0 || direct_x !== 0) {
+			xhr = new XMLHttpRequest();
+			xhr.open('GET', 'move?direct_x=' + direct_x + '&direct_y=' + direct_y);	
+			xhr.send();
+		}
+
+		/*if (direct_y >= 15 || direct_y <=-15) { 
+			var xhr_y = new XMLHttpRequest();
+			xhr_y.open('GET', 'move_motor?direct=' + (direct_y >= 15 ? 1: -1) + '&time=0.5&duty_cycle=' + Math.abs(direct_y), true);	
+			xhr_y.send();
+		}
+		if (direct_x >= 15 || direct_x <=-15) { 
+			var xhr_x = new XMLHttpRequest();
+			xhr_x.open('GET', 'move_rule?direct=' + (direct_x >= 15 ? 1: -1) + '&time=0.3', true);	
+			xhr_x.send();
+		}*/
+	}
+</script>
+</head>
+
+<body>
+<script>
+var jswidth=0;
+var jsheight=0;
+var mnwidth=0;
+var mnheight=0;
+x=0;
+y=0;
+cx=0;
+cy=0;
+
+(function ($) {
+    // Detect touch support
+    $.support.touch = 'ontouchend' in document;
+    // Ignore browsers without touch support
+    if (!$.support.touch) {
+    return;
+    }
+    var mouseProto = $.ui.mouse.prototype,
+        _mouseInit = mouseProto._mouseInit,
+        touchHandled;
+
+    function simulateMouseEvent (event, simulatedType) { //use this function to simulate mouse event
+    // Ignore multi-touch events
+        if (event.originalEvent.touches.length > 1) {
+        return;
+        }
+    event.preventDefault(); //use this to prevent scrolling during ui use
+
+    var touch = event.originalEvent.changedTouches[0],
+        simulatedEvent = document.createEvent('MouseEvents');
+    // Initialize the simulated mouse event using the touch event's coordinates
+    simulatedEvent.initMouseEvent(
+        simulatedType,    // type
+        true,             // bubbles                    
+        true,             // cancelable                 
+        window,           // view                       
+        1,                // detail                     
+        touch.screenX,    // screenX                    
+        touch.screenY,    // screenY                    
+        touch.clientX,    // clientX                    
+        touch.clientY,    // clientY                    
+        false,            // ctrlKey                    
+        false,            // altKey                     
+        false,            // shiftKey                   
+        false,            // metaKey                    
+        0,                // button                     
+        null              // relatedTarget              
+        );
+
+    // Dispatch the simulated event to the target element
+    event.target.dispatchEvent(simulatedEvent);
+    }
+    mouseProto._touchStart = function (event) {
+    var self = this;
+    // Ignore the event if another widget is already being handled
+    if (touchHandled || !self._mouseCapture(event.originalEvent.changedTouches[0])) {
+        return;
+        }
+    // Set the flag to prevent other widgets from inheriting the touch event
+    touchHandled = true;
+    // Track movement to determine if interaction was a click
+    self._touchMoved = false;
+    // Simulate the mouseover event
+    simulateMouseEvent(event, 'mouseover');
+    // Simulate the mousemove event
+    simulateMouseEvent(event, 'mousemove');
+    // Simulate the mousedown event
+    simulateMouseEvent(event, 'mousedown');
+    };
+    
+
+    mouseProto._touchMove = function (event) {
+    // Ignore event if not handled
+    if (!touchHandled) {
+        return;
+        }
+    // Interaction was not a click
+    this._touchMoved = true;
+    // Simulate the mousemove event
+    simulateMouseEvent(event, 'mousemove');
+    };
+    mouseProto._touchEnd = function (event) {
+    // Ignore event if not handled
+    if (!touchHandled) {
+        return;
+    }
+    // Simulate the mouseup event
+    simulateMouseEvent(event, 'mouseup');
+    // Simulate the mouseout event
+    simulateMouseEvent(event, 'mouseout');
+    // If the touch interaction did not move, it should trigger a click
+    if (!this._touchMoved) {
+      // Simulate the click event
+      simulateMouseEvent(event, 'click');
+    }
+    // Unset the flag to allow other widgets to inherit the touch event
+    touchHandled = false;
+    };
+    mouseProto._mouseInit = function () {
+    var self = this;
+    // Delegate the touch handlers to the widget's element
+    self.element
+        .on('touchstart', $.proxy(self, '_touchStart'))
+        .on('touchmove', $.proxy(self, '_touchMove'))
+        .on('touchend', $.proxy(self, '_touchEnd'));
+
+    // Call the original $.ui.mouse init method
+    _mouseInit.call(self);
+    };
+})(jQuery);
+
+
+function inposition()
+{
+	$("#joistik .joistmamipulator").animate({left: cx+"px", top: cy+"px"});
+	
+}
+$(document).ready(function(){
+
+jswidth=$("#joistik").width();
+jsheight=$("#joistik").height();
+mnwidth=$("#joistik .joistmamipulator").width();
+mnheight=$("#joistik .joistmamipulator").height();
+cx=(jswidth/2)-(mnwidth/2);
+cy=(jsheight/2)-(mnheight/2);
+inposition();
+
+	$("#joistik .joistmamipulator").mouseup(function(){ inposition();});
+	$("#joistik .joistmamipulator").draggable({containment:[0+mnwidth/2,0+mnheight/2,jswidth-mnwidth/2,jsheight-mnheight/2]});
+	$(document).mouseup(function(){inposition();});
+	
+})
+
+setInterval(
+function(){
+var position=$("#joistik .joistmamipulator").position();
+y=cy-position.top;	
+x=-cx+position.left;
+
+
+
+//тут вот и будем делать все, что хотим
+//например выведем в интупы значения джойстика
+$("#oy").val(y);
+$("#ox").val(x);
+
+teslaMove(x, y);
+
+	},
+300);
+
+
+</script>
+
+<div id="joistik" class="joistik">
+	<div class="joistmamipulator"></div>
+
+</div>
+<input type="text" value="0" id="oy" /><br />
+<input type="text" value="0" id="ox" />
+
+
+
+
+</body>
+</html>
