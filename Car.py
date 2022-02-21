@@ -8,13 +8,15 @@ import asyncio
 # routes = web.RouteTableDef()
 
 class Car:
-    def __init__(self, in_1=23, in_2=24, in_3=17, in_4=27):
+    def __init__(self, out_1=23, out_2=24, out_3=17, out_4=27, in_1=15, in_2=18):
         self.motor = None
         self.rule = None
-        self.motor_1 = in_3  # in motor 
-        self.motor_2 = in_4 # in motor 
-        self.rule_1 = in_1  # in rule
-        self.rule_2 = in_2  # in rule
+        self.motor_1 = out_3  # in motor 
+        self.motor_2 = out_4 # in motor 
+        self.rule_1 = out_1  # in rule
+        self.rule_2 = out_2  # in rule
+        self.sens_1 = in_1 # proximity sensor forward
+        self.sens_2 = in_2 # proximity sensor backward
         self.direct = 0 # для машины [0:9] excl.5, как numpad ; для движков [0,1,2] где 0 - не двигается
         self.debug = True
         if self.debug:
@@ -37,6 +39,7 @@ class Car:
     
     def __del__(self, _print=True):
         message_list = []
+        del self.sensor
         self.motor.pwm.stop()
         del self.motor      
         if self.debug:             
@@ -51,7 +54,7 @@ class Car:
             for message in message_list: print(message)
         return message_list
         
-    def __call__(self, motor, rule, camera=None, debug=True):
+    def __call__(self, motor, rule, camera=None, sensor=None, debug=True):
         self.loop = None
         self.motor = motor
         self.motor.car = self
@@ -60,6 +63,7 @@ class Car:
         self.debug = debug
         if self.debug: print('call Car')
         self.camera = camera
+        self.sensor = sensor
     def __setattr__(self, attr, val):
         self.__dict__[attr] = val
         if type(self) is Car and attr in ('debug', 'time_sleep'):
@@ -173,7 +177,33 @@ class Motor(Car):
         self.pwm.stop()
         self.direct = 0
         self.duty_cycle = 0
+
+class Sensor(Car):
+    def __init__(self):
+        super().__init__()
+        if self.debug: print('init Sensor: pin', self.sens_1, self.sens_2)
+        io.setup(self.sens_1, io.IN)
+        io.setup(self.sens_2, io.IN)      
         
+    def __call__(self):
+        sens_tuple = io.input(self.sens_1), io.input(self.sens_2)
+        if self.debug: print('Sensor finobstacles:', sens_tuple) 
+        return sens_tuple
+    
+    def get_obstacles(self, sensor='', dtype: type=bool):
+        '''check proximity sensor (sens_1/sens_2/all)
+        return - int, tuple - int for 1|2 sensor, tuple while sensor is empty
+        True/0 - there is obstacle
+        False/1 - no obstacle 
+''' 
+        
+        if sensor=='sens_1' or sensor.find('1') > -1 or sensor.find('forw') > -1:
+            return io.input(self.sens_1)==0 if dtype==bool else io.input(self.sens_1) 
+        if sensor=='sens_2' or sensor.find('2') > -1 or sensor.find('back') > -1:
+            return io.input(self.sens_2)==0 if dtype==bool else io.input(self.sens_2)
+        else: # not sensor:
+            sens_tuple = self.__call__()
+            return (sens_tuple[0]==0, sens_tuple[1]==0) if dtype==bool else sens_tuple 
         
 class Rule(Car):
     def __init__(self):

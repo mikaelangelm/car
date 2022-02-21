@@ -1,8 +1,8 @@
 import asyncio
 import Car, Cam #, Man
 
-car, motor, rule = Car.Car(), Car.Motor(), Car.Rule()#, camera = Cam.cam() #, man.man()
-car(motor, rule)#, camera) #, manipulator) # соединим вместе машину, мотор, руль, камеру, манипулятор
+car, motor, rule, sensor = Car.Car(), Car.Motor(), Car.Rule(), Car.Sensor()#, camera = Cam.cam() #, man.man()
+car(motor, rule, sensor=sensor)#, camera=camera) #, manipulator) # соединим вместе машину, мотор, руль, камеру, манипулятор
 
 self_drive = True
 
