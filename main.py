@@ -4,7 +4,7 @@ import Car, Cam #, Man
 car, motor, rule, sensor = Car.Car(), Car.Motor(), Car.Rule(), Car.Sensor()#, camera = Cam.cam() #, man.man()
 car(motor, rule, sensor=sensor)#, camera=camera) #, manipulator) # соединим вместе машину, мотор, руль, камеру, манипулятор
 
-self_drive = True
+self_drive = False
 
 # === AUTOMATIC DRIVE
 if self_drive:            
@@ -14,19 +14,19 @@ if self_drive:
 # === MANUAL DRIVE ===    
 else: 
     from aiohttp import web 
-    web_handler = Car.WebHandler(app=web.Application(), routes=web.RouteTableDef())
+    web_handler = Car.WebHandler(web, app=web.Application(), routes=web.RouteTableDef())
            
     @web_handler.routes.get('/')
     def main_client(request):  
         return web_handler.main_client(request)
     
-    @web_handler.routes.get('/tesla_joystick')
+    @web_handler.routes.get('/joystick')
     def joystick(request):
         return web_handler.joystick(request)
     
     @web_handler.routes.get('/{move}')
     async def move(request):
-        web_handler.move(request)
+        await web_handler.move(request)
     
     # https://docs.aiohttp.org/en/stable/web_quickstart.html
     web_handler.app.add_routes(web_handler.routes)

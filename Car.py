@@ -228,21 +228,22 @@ class Rule(Car):
         
    
 class WebHandler:
-    def __init__(self, app, routes):
+    def __init__(self, web, app, routes):
+        self.web    = web
         self.app    = app 
-        self.routes = routes    
+        self.routes = routes
            
     # @routes.get('/')
-    def main_client(request):  
-        with open('/home/pi/Desktop/Py/tesla_web_client/tesla.html', 'r') as tesla_html_file:
-            return web.Response(text=tesla_html_file.read(), content_type='text/html')
+    def main_client(self, request):  
+        with open('/home/pi/Desktop/Py/car/web_client/car.html', 'r') as tesla_html_file:
+            return self.web.Response(text=tesla_html_file.read(), content_type='text/html')
     # @routes.get('/tesla_joystick')
-    def joystick(request):
+    def joystick(self, request):
         '''https://www.programmersforum.ru/showthread.php?t=244839'''
-        with open('/home/pi/Desktop/Py/tesla_web_client/tesla_joystick.html', 'r') as tesla_html_file:
-            return web.Response(text=tesla_html_file.read(), content_type='text/html')           
+        with open('/home/pi/Desktop/Py/car/web_client/joystick.html', 'r') as tesla_html_file:
+            return self.web.Response(text=tesla_html_file.read(), content_type='text/html')           
     # @routes.get('/{move}')
-    async def move(request):   
+    async def move(self, request):   
         method = request.match_info.get('move')
         return_text = 'done'
         params = dict(request.rel_url.query) # https://stackoverflow.com/questions/47851096/query-parameters-of-the-get-url-using-aiohttp-from-python3-5
@@ -270,12 +271,12 @@ class WebHandler:
             cancel_prev_task(method)
             request.app['loop'].create_task(request.app['car'].rule.move_rule(**params))
         elif method=='move': # DONE manage from Car.move()
-            request.app['car'].move(params['direct_x'], params['direct_y'])
+            await request.app['car'].move(params['direct_x'], params['direct_y'])
         elif method=='car':
             return_text = str(request.app['car'].__dict__)
         elif method=='del_car':
             return_text = str(request.app['car'].__del__())
-        return web.Response(text=return_text)
+        return self.web.Response(text=return_text)
 
  
 
