@@ -25,13 +25,13 @@ else:
         return web_handler.joystick(request)
     
     @web_handler.routes.get('/{move}')
-    async def move(request):
-        await web_handler.move(request)
+    def move(request):
+        web_handler.move(request)
     
     # https://docs.aiohttp.org/en/stable/web_quickstart.html
     web_handler.app.add_routes(web_handler.routes)
 
-    car.time_sleep = 0.300 # min(car.time_sleep, 0.5*0.1) # 0.1 - частота опроса setInterval в tesla_joystick.html
+    car.time_sleep = 0.050 # min(car.time_sleep, 0.5*0.1) # 0.1 - частота опроса setInterval в tesla_joystick.html
     web_handler.app['car'] = car
     web_handler.app['loop'] = None
     

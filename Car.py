@@ -11,8 +11,8 @@ class Car:
     def __init__(self, out_1=23, out_2=24, out_3=17, out_4=27, in_1=15, in_2=18):
         self.motor = None
         self.rule = None
-        self.motor_1 = out_3  # in motor 
-        self.motor_2 = out_4 # in motor 
+        self.motor_1 = out_4  # in motor 
+        self.motor_2 = out_3 # in motor 
         self.rule_1 = out_1  # in rule
         self.rule_2 = out_2  # in rule
         self.sens_1 = in_1 # proximity sensor forward
@@ -81,8 +81,8 @@ class Car:
                 _=task.cancel()
                 break
                 if request.app['car'].debug: print_all_tasks()
-    # DONE made async            
-    async def move(self, direct_x: float=0, direct_y: float=0, time=1):
+    # DONT made async            
+    def move(self, direct_x: float=0, direct_y: float=0, time=1):
         '''move in x (left-right) and y (forward-backward) directions
         params:
         direct_x - float - [-100; 100] no means in value: means only sign (- left, + right)
@@ -100,10 +100,10 @@ class Car:
             
         if (direct_y >= 15 or direct_y <=-15):
             self.cancel_prev_task('move_motor')
-            await self.loop.create_task(self.motor.move_motor((1 if direct_y >= 15 else -1), abs(direct_y), time))
+            self.loop.create_task(self.motor.move_motor((1 if direct_y >= 15 else -1), abs(direct_y), time=time))
         if (direct_x >= 15 or direct_x <=-15):
             self.cancel_prev_task('move_rule')
-            await self.loop.create_task(self.rule.move_rule((1 if direct_x >= 15 else -1), time=time))
+            self.loop.create_task(self.rule.move_rule((1 if direct_x >= 15 else -1), time=time))
             
     def func(self, t: float=0, y_min: int=0, force=7) -> int:
         t *= force
@@ -142,6 +142,12 @@ class Motor(Car):
             t = 0
             while 1 - self.func(t) > self.duty_cycle: # чтобы подогнать t под соответствующую мощность
                 t += 0.05
+            # TODO fix
+#             move Motor pin 27 time 1 duty_cycle 23 -> 91.0
+#             0) direct 1 -> -1
+#             1) 23 -> 23 t 0
+#             1) 23 -> -2 t 0.05
+#             dutycycle must have a value from 0.0 to 100.0
             while self.duty_cycle > 0:
                 await asyncio.sleep(self.time_sleep)
                 if self.debug: print('1)',self.duty_cycle, '->', self.duty_cycle - self.func(t), 't', round(t, 2))
@@ -235,7 +241,7 @@ class WebHandler:
            
     # @routes.get('/')
     def main_client(self, request):  
-        with open('/home/pi/Desktop/Py/car/web_client/car.html', 'r') as tesla_html_file:
+        with open('/home/pi/Desktop/Py/car/web_client/main.html', 'r') as tesla_html_file:
             return self.web.Response(text=tesla_html_file.read(), content_type='text/html')
     # @routes.get('/tesla_joystick')
     def joystick(self, request):
@@ -243,7 +249,7 @@ class WebHandler:
         with open('/home/pi/Desktop/Py/car/web_client/joystick.html', 'r') as tesla_html_file:
             return self.web.Response(text=tesla_html_file.read(), content_type='text/html')           
     # @routes.get('/{move}')
-    async def move(self, request):   
+    def move(self, request):   
         method = request.match_info.get('move')
         return_text = 'done'
         params = dict(request.rel_url.query) # https://stackoverflow.com/questions/47851096/query-parameters-of-the-get-url-using-aiohttp-from-python3-5
@@ -271,7 +277,7 @@ class WebHandler:
             cancel_prev_task(method)
             request.app['loop'].create_task(request.app['car'].rule.move_rule(**params))
         elif method=='move': # DONE manage from Car.move()
-            await request.app['car'].move(params['direct_x'], params['direct_y'])
+            request.app['car'].move(params['direct_x'], params['direct_y'])
         elif method=='car':
             return_text = str(request.app['car'].__dict__)
         elif method=='del_car':

@@ -1,6 +1,6 @@
 # from IPython.display import clear_output ; clear_output()
 import time as time_lib
-import cam, man # camera, manipulator
+import Cam, Man # camera, manipulator
 import RPi.GPIO as io
 import asyncio
 
@@ -8,7 +8,7 @@ from aiohttp import web
 routes = web.RouteTableDef()
     
 class Car:
-    def __init__(self, in_1=27, in_2=17, in_3=24, in_4=23):
+    def __init__(self, in_1=23, in_2=24, in_3=17, in_4=27):
         self.motor = None
         self.rule = None
         self.motor_1 = in_3  # in motor 
@@ -192,10 +192,10 @@ class Rule(Car):
 def tesla_web_response(request):  
     with open('/home/pi/Desktop/Py/tesla_web_client/tesla.html', 'r') as tesla_html_file:
         return web.Response(text=tesla_html_file.read(), content_type='text/html')
-@routes.get('/tesla_joystick')
+@routes.get('/joystick')
 def tesla_joystick(request):
     '''https://www.programmersforum.ru/showthread.php?t=244839'''
-    with open('/home/pi/Desktop/Py/tesla_web_client/tesla_joystick.html', 'r') as tesla_html_file:
+    with open('/home/pi/Desktop/Py/car/web_client/joystick.html', 'r') as tesla_html_file:
         return web.Response(text=tesla_html_file.read(), content_type='text/html')
         
 
@@ -228,30 +228,30 @@ async def tesla_move(request):
         cancel_prev_task(method)
         request.app['loop'].create_task(request.app['car'].rule.move_rule(**params))
     elif method=='move': # DONE manage from Car.move()
-        request.app['car'].move(params['direct_x'], params['direct_y'])
+        await request.app['car'].move(params['direct_x'], params['direct_y'])
     elif method=='car':
         return_text = str(request.app['car'].__dict__)
     elif method=='del_car':
         return_text = str(request.app['car'].__del__())
     return web.Response(text=return_text)
 
-# car, motor, rule, camera = Car(), Motor(), Rule(), cam.cam() #, man.man()
-# car(motor, rule, camera) # соединим вместе машину, мотор, руль, камеру, манипу
+car, motor, rule, camera = Car(), Motor(), Rule(), Cam.Cam() #, man.man()
+car(motor, rule, camera) # соединим вместе машину, мотор, руль, камеру, манипу
 # 
-# # https://docs.aiohttp.org/en/stable/web_quickstart.html
-# app = web.Application()
-# app.add_routes(routes)
+# https://docs.aiohttp.org/en/stable/web_quickstart.html
+app = web.Application()
+app.add_routes(routes)
 # app.router.add_static('/static/', path='tesla_web_client/static', name='static')
-# car.time_sleep = 0.300 # min(car.time_sleep, 0.5*0.1) # 0.1 - частота опроса setInterval в tesla_joystick.html
-# app['car'] = car
-# app['loop'] = None
+car.time_sleep = 0.300 # min(car.time_sleep, 0.5*0.1) # 0.1 - частота опроса setInterval в tesla_joystick.html
+app['car'] = car
+app['loop'] = None
 # 
-# self_drive = True
-# if self_drive:
-#     car.loop = asyncio.new_event_loop()
-#     car.loop.run_until_complete(car.move(0, 100, time=2))
-# else:
-#     try:
-#         web.run_app(app, port=8080) # , host="localhost", port=8080) #
-#     except KeyboardInterrupt:
-#         del car
+self_drive = False
+if self_drive:
+    car.loop = asyncio.new_event_loop()
+    car.loop.run_until_complete(car.move(0, 100, time=2))
+else:
+    try:
+        web.run_app(app, port=8080) # , host="localhost", port=8080) #
+    except KeyboardInterrupt:
+        del car
