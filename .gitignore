@@ -1,5 +1,9 @@
 *.weights
 *.ipynb
 *.old
+*.jpg
+*.png
+*.ogg
 !cam_server/*
-
+cam_server/*.jpg
+flat/

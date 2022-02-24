@@ -1,0 +1,80 @@
+человек
+bicycle
+car
+motorbike
+aeroplane
+bus
+train
+truck
+boat
+traffic light
+fire hydrant
+stop sign
+parking meter
+bench
+bird
+cat
+dog
+horse
+sheep
+cow
+elephant
+bear
+zebra
+giraffe
+backpack
+umbrella
+сумка
+tie
+suitcase
+frisbee
+skis
+snowboard
+sports ball
+kite
+baseball bat
+baseball glove
+skateboard
+surfboard
+tennis racket
+бутылка
+бокал вина
+чашка
+вилка
+нож
+spoon
+чаша
+бананы
+яблочко
+sandwich
+апельсинчик
+broccoli
+carrot
+hot dog
+пицца
+пончик
+пирог
+стул
+софа
+pottedplant
+кровать
+стол
+туалет
+телевизор
+ноутбук
+мышка
+remote
+клавиатура
+cell phone
+микроволновка
+плита
+тостер
+sink
+холодильник
+book
+часы
+vase
+ножницы
+teddy bear
+hair drier
+щетка
